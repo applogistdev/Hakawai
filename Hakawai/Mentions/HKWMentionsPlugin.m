@@ -316,8 +316,16 @@ typedef NS_ENUM(NSInteger, HKWMentionsState) {
     NSUInteger location = parentTextView.selectedRange.location;
     NSRange originalRange = NSMakeRange(location, 0);
     NSDictionary *mentionAttributes = self.mentionUnselectedAttributes;
-    // Mentions cannot overlap. In order to avoid inconsistency, destroy any existing mentions that intrude within the
-    //  new mention's range.
+    
+    if ([self.delegate respondsToSelector:@selector(unselectedMentionAttributes:)]) {
+        mentionAttributes = [self.delegate unselectedMentionAttributes:mention];
+    }
+    
+    
+        // Mentions cannot overlap. In order to avoid inconsistency, destroy any existing mentions that intrude within the
+        //  new mention's range.
+    
+    
     [self bleachMentionsWithinRange:mention.range];
     [parentTextView transformTextAtRange:mention.range withTransformer:^NSAttributedString *(NSAttributedString *input) {
         if (![mention.mentionText isEqualToString:input.string]) {
@@ -566,6 +574,16 @@ typedef NS_ENUM(NSInteger, HKWMentionsState) {
 
     NSDictionary *unselectedAttributes = self.mentionUnselectedAttributes;
     NSDictionary *selectedAttributes = self.mentionSelectedAttributes;
+    
+    
+    if ([self.delegate respondsToSelector:@selector(unselectedMentionAttributes:)]) {
+        unselectedAttributes = [self.delegate unselectedMentionAttributes:mentionData];
+    }
+
+    if ([self.delegate respondsToSelector:@selector(selectedMentionAttributes:)]) {
+        selectedAttributes = [self.delegate selectedMentionAttributes:mentionData];
+    }
+    
     // Save the range so the cursor doesn't move.
     [parentTextView transformTextAtRange:range withTransformer:^NSAttributedString *(NSAttributedString *input) {
         NSMutableAttributedString *buffer = [input mutableCopy];
@@ -598,41 +616,77 @@ typedef NS_ENUM(NSInteger, HKWMentionsState) {
     if (bleachRange.location == NSNotFound || bleachRange.length == 0) {
         return 0;
     }
-    NSMutableArray *ranges = [NSMutableArray array];
+//    NSMutableArray *ranges = [NSMutableArray array];
+//    NSMutableArray *selectedAttributes = [NSMutableArray array];
+//    NSMutableArray *unSelectedAttributes = [NSMutableArray array];
+    
+    NSMutableArray *rangeList = [NSMutableArray array];
+    
     __strong __auto_type parentTextView = self.parentTextView;
     [parentTextView.attributedText enumerateAttributesInRange:HKW_FULL_RANGE(parentTextView.attributedText)
                                                       options:0
                                                    usingBlock:^(NSDictionary *attrs, NSRange range, __unused BOOL *stop) {
-                                                       // Find all attributes in the string subsection.
-                                                       if (NSIntersectionRange(range, bleachRange).length == 0) {
-                                                           // We only care about attributes whose effective ranges
-                                                           //  lie within bleachRange
-                                                           return;
-                                                       }
-                                                       HKWMentionsAttribute *value = attrs[HKWMentionAttributeName];
-                                                       if (value) {
-                                                           [ranges addObject:[NSValue valueWithRange:range]];
-                                                       }
-                                                   }];
-    NSDictionary *selectedAttributes = self.mentionSelectedAttributes;
-    NSDictionary *unselectedAttributes = self.mentionUnselectedAttributes;
-    for (NSValue *v in ranges) {
+        
+            // Find all attributes in the string subsection.
+        if (NSIntersectionRange(range, bleachRange).length == 0) {
+                // We only care about attributes whose effective ranges
+                //  lie within bleachRange
+            return;
+        }
+        HKWMentionsAttribute *value = attrs[HKWMentionAttributeName];
+        
+        
+        NSDictionary *selectedAttr = @{};
+        NSDictionary *unSelectedAttr = @{};
+        
+        if ([self.delegate respondsToSelector:@selector(unselectedMentionAttributes:)]) {
+            unSelectedAttr = [self.delegate unselectedMentionAttributes:value];
+        }
+        
+        if ([self.delegate respondsToSelector:@selector(selectedMentionAttributes:)]) {
+            selectedAttr = [self.delegate selectedMentionAttributes:value];
+        }
+        
+        if (value) {
+            [rangeList addObject:@{
+                @"value": [NSValue valueWithRange:range],
+                @"selected": selectedAttr,
+                @"unSelected": unSelectedAttr
+            }];
+        }
+    }];
+    
+//    NSDictionary *selectedAttributes = self.mentionSelectedAttributes;
+//    NSDictionary *unselectedAttributes = self.mentionUnselectedAttributes;
+//
+//    if ([self.delegate respondsToSelector:@selector(unselectedMentionAttributes:)]) {
+//        unselectedAttributes = [self.delegate unselectedMentionAttributes:bleachRange];
+//    }
+//
+//    if ([self.delegate respondsToSelector:@selector(selectedMentionAttributes:)]) {
+//        selectedAttributes = [self.delegate selectedMentionAttributes:bleachRange];
+//    }
+    
+    for (NSDictionary *item in rangeList) {
+        
+        NSValue *v = [item objectForKey:@"value"];
+        
         [parentTextView transformTextAtRange:[v rangeValue]
                              withTransformer:^NSAttributedString *(NSAttributedString *input) {
                                  NSMutableAttributedString *buffer = [input mutableCopy];
                                  [buffer removeAttribute:HKWMentionAttributeName range:HKW_FULL_RANGE(input)];
                                  // NOTE: We may need to add support for capturing and restoring any attributes
                                  //  overwritten by applying the special mentions attributes in the future.
-                                 for (NSString *key in unselectedAttributes) {
+                                 for (NSString *key in [item objectForKey:@"unSelected"]) {
                                      [buffer removeAttribute:key range:HKW_FULL_RANGE(input)];
                                  }
-                                 for (NSString *key in selectedAttributes) {
+                                 for (NSString *key in [item objectForKey:@"selected"]) {
                                      [buffer removeAttribute:key range:HKW_FULL_RANGE(input)];
                                  }
                                  return [buffer copy];
                              }];
     }
-    return [ranges count];
+    return [rangeList count];
 }
 
 /*!
@@ -663,6 +717,15 @@ typedef NS_ENUM(NSInteger, HKWMentionsState) {
 
     NSDictionary *unselectedAttributes = self.mentionUnselectedAttributes;
     NSDictionary *selectedAttributes = self.mentionSelectedAttributes;
+    
+    if ([self.delegate respondsToSelector:@selector(unselectedMentionAttributes:)]) {
+        unselectedAttributes = [self.delegate unselectedMentionAttributes:mentionData];
+    }
+
+    if ([self.delegate respondsToSelector:@selector(selectedMentionAttributes:)]) {
+        selectedAttributes = [self.delegate selectedMentionAttributes:mentionData];
+    }
+    
     [parentTextView transformTextAtRange:range withTransformer:^NSAttributedString *(NSAttributedString *input) {
         NSMutableAttributedString *buffer = [input mutableCopy];
         [buffer removeAttribute:HKWMentionAttributeName range:HKW_FULL_RANGE(input)];
@@ -1954,6 +2017,16 @@ shouldChangeTextInRange:(NSRange)range
     UIColor *parentColor = parentTextView.textColorSetByApp;
     NSAssert(self.mentionUnselectedAttributes != nil, @"Error! Mention attribute dictionaries should never be nil.");
     NSDictionary *unselectedAttributes = self.mentionUnselectedAttributes;
+    
+    if ([self.delegate respondsToSelector:@selector(unselectedMentionAttributes:)]) {
+        unselectedAttributes = [self.delegate unselectedMentionAttributes:mention];
+    }
+    
+//    if ([self.delegate respondsToSelector:@selector(selectedMentionAttributes:)]) {
+//        self.mentionSelectedAttributes = [self.delegate selectedMentionAttributes:mention];
+//    }
+    
+    
 
     // When control character is inserted before word and user selects mention for that word,
     // we want to replace word after control character with mention text.

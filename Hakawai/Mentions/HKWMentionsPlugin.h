@@ -245,6 +245,10 @@ typedef NS_ENUM(NSInteger, HKWMentionsPluginState) {
  */
 - (CGFloat)heightForLoadingCellInTableView:(UITableView *_Null_unspecified)tableView;
 
+
+- (NSDictionary *_Null_unspecified)unselectedMentionAttributes:(id<HKWMentionsEntityProtocol> _Null_unspecified)entity;
+- (NSDictionary *_Null_unspecified)selectedMentionAttributes:(id<HKWMentionsEntityProtocol> _Null_unspecified)entity;
+
 @end
 
 @class HKWMentionsAttribute;
