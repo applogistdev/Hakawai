@@ -554,14 +554,17 @@ typedef NS_ENUM(NSInteger, HKWMentionsState) {
         return;
     }
     __strong __auto_type parentTextView = self.parentTextView;
-#ifdef DEBUG
-    // For development: assert that a mention actually exists
+    
+
     NSRange dataRange;
     NSAttributedString *parentText = parentTextView.attributedText;
     id mentionData = [parentText attribute:HKWMentionAttributeName
                                    atIndex:range.location
                      longestEffectiveRange:&dataRange
                                    inRange:HKW_FULL_RANGE(parentText)];
+    
+#ifdef DEBUG
+        // For development: assert that a mention actually exists
     NSAssert(mentionData, @"There must be a mention at this location. There was no mention attribute found.");
     NSAssert([mentionData isKindOfClass:[HKWMentionsAttribute class]],
              @"The mention attribe was found, but its value was of an unexpected type: '%@'",
@@ -700,14 +703,16 @@ typedef NS_ENUM(NSInteger, HKWMentionsState) {
         return;
     }
     __strong __auto_type parentTextView = self.parentTextView;
-#ifdef DEBUG
-    // For development: assert that a mention actually exists
+
     NSRange dataRange;
     NSAttributedString *parentText = parentTextView.attributedText;
     id mentionData = [parentText attribute:HKWMentionAttributeName
                                    atIndex:range.location
                      longestEffectiveRange:&dataRange
                                    inRange:HKW_FULL_RANGE(parentText)];
+    
+#ifdef DEBUG
+        // For development: assert that a mention actually exists
     NSAssert([mentionData isKindOfClass:[HKWMentionsAttribute class]]
              && dataRange.length == range.length
              && dataRange.location == range.location,
