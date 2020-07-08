@@ -581,12 +581,16 @@ typedef NS_ENUM(NSInteger, HKWMentionsState) {
     
     if ([self.delegate respondsToSelector:@selector(unselectedMentionAttributes:)]) {
         HKWMentionsAttribute *attr = (HKWMentionsAttribute*)mentionData;
-        unselectedAttributes = [self.delegate unselectedMentionAttributes:attr];
+        if (attr != nil) {
+            unselectedAttributes = [self.delegate unselectedMentionAttributes:attr];
+        }
     }
 
     if ([self.delegate respondsToSelector:@selector(selectedMentionAttributes:)]) {
         HKWMentionsAttribute *attr = (HKWMentionsAttribute*)mentionData;
-        selectedAttributes = [self.delegate selectedMentionAttributes:attr];
+        if (attr != nil) {
+            selectedAttributes = [self.delegate selectedMentionAttributes:attr];
+        }
     }
     
     // Save the range so the cursor doesn't move.
@@ -640,6 +644,9 @@ typedef NS_ENUM(NSInteger, HKWMentionsState) {
         }
         HKWMentionsAttribute *value = attrs[HKWMentionAttributeName];
         
+        if (value == nil) {
+            return;
+        }
         
         NSDictionary *selectedAttr = @{};
         NSDictionary *unSelectedAttr = @{};
@@ -726,11 +733,15 @@ typedef NS_ENUM(NSInteger, HKWMentionsState) {
     NSDictionary *selectedAttributes = self.mentionSelectedAttributes;
     
     if ([self.delegate respondsToSelector:@selector(unselectedMentionAttributes:)]) {
-        unselectedAttributes = [self.delegate unselectedMentionAttributes:(HKWMentionsAttribute*)mentionData];
+        if (mentionData != nil) {
+            unselectedAttributes = [self.delegate unselectedMentionAttributes:(HKWMentionsAttribute*)mentionData];
+        }
     }
 
     if ([self.delegate respondsToSelector:@selector(selectedMentionAttributes:)]) {
-        selectedAttributes = [self.delegate selectedMentionAttributes:(HKWMentionsAttribute*)mentionData];
+        if (mentionData != nil) {
+            selectedAttributes = [self.delegate selectedMentionAttributes:(HKWMentionsAttribute*)mentionData];
+        }
     }
     
     [parentTextView transformTextAtRange:range withTransformer:^NSAttributedString *(NSAttributedString *input) {

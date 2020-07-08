@@ -106,24 +106,24 @@
     NSArray *data = self.fakeData;
 
     // This #define determines whether or not the first response should be returned in a synchronous or asynchronous
-    //  manner. This is useful for testing purposes.
-#define SHOULD_BE_SYNCHRONOUS
-
-#ifdef SHOULD_BE_SYNCHRONOUS
-    NSMutableArray *buffer = [NSMutableArray array];
-    if ([keyString length] == 0) {
-        buffer = [data copy];
-    }
-    else {
-        for (id<HKWMentionsEntityProtocol> entity in data) {
-            NSString *name = [entity entityName];
-            if ([[self class] string:keyString isPrefixOfString:name]) {
-                [buffer addObject:entity];
-            }
-        }
-    }
-    completionBlock([buffer copy], YES, YES);
-#else
+//    //  manner. This is useful for testing purposes.
+//#define SHOULD_BE_SYNCHRONOUS NO
+//
+//#ifdef SHOULD_BE_SYNCHRONOUS
+//    NSMutableArray *buffer = [NSMutableArray array];
+//    if ([keyString length] == 0) {
+//        buffer = [data copy];
+//    }
+//    else {
+//        for (id<HKWMentionsEntityProtocol> entity in data) {
+//            NSString *name = [entity entityName];
+//            if ([[self class] string:keyString isPrefixOfString:name]) {
+//                [buffer addObject:entity];
+//            }
+//        }
+//    }
+//    completionBlock([buffer copy], YES, YES);
+//#else
     // Pretend to do a network request.
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.01 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         NSMutableArray *buffer = [NSMutableArray array];
@@ -146,10 +146,13 @@
             NSArray *firstBuffer = [buffer objectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, 3)]];
             NSArray *secondBuffer = [buffer objectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)]];
             NSArray *finalBuffer = [buffer objectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(6, [buffer count] - 6)]];
+            
             completionBlock(firstBuffer, YES, NO);
+            
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                 completionBlock(secondBuffer, YES, NO);
             });
+            
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(6.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                 completionBlock(finalBuffer, YES, YES);
             });
@@ -159,7 +162,7 @@
             completionBlock([buffer copy], YES, YES);
         }
     });
-#endif
+//#endif
 }
 
 // An optional method which allows us to specify whether or not a given entity can be 'trimmed'; for example, a mention

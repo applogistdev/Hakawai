@@ -414,7 +414,7 @@
 		E1C9675419A2A66000A4AA93 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 1150;
 				ORGANIZATIONNAME = LinkedIn;
 				TargetAttributes = {
 					E1C9676B19A2A66000A4AA93 = {
@@ -427,6 +427,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = E1C9675319A2A66000A4AA93;
@@ -619,6 +620,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Hakawai/Hakawai-Prefix.pch";
 				INFOPLIST_FILE = "HakawaiTests/HakawaiTests-Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.linkedin.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = xctest;
 			};
@@ -636,6 +638,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Hakawai/Hakawai-Prefix.pch";
 				INFOPLIST_FILE = "HakawaiTests/HakawaiTests-Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.linkedin.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = xctest;
 			};
